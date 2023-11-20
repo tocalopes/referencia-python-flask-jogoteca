@@ -33,4 +33,4 @@ def criar():
     lista_jogos.append(jogo)
     return inicio()
 
-app.run(port=8080)
+app.run(port=8080, debug=True)
