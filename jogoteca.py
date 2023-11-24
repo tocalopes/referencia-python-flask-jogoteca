@@ -1,3 +1,5 @@
+import random
+
 from flask import Flask, render_template, request, redirect, session, flash, url_for
 
 
@@ -10,58 +12,44 @@ class Jogo:
 
 
 app = Flask(__name__)
-app.secret_key = 'tocalopes'
 
-lista_jogos = [Jogo('tetris', 'puzzle', 'atari'),
-               Jogo('crash', 'aventura', 'ps1')]
+lista_participantes = []
+vencedor = ""
 
 
 @app.route('/')
 def index():
-    return render_template('lista.html', titulo='Jogos', jogos=lista_jogos)
+    return render_template('lista.html', titulo='Participante', participantes=lista_participantes)
+
+@app.route('/vencedor', methods=['POST','GET'])
+def vencedor():
+    vencedor = request.args.get('vencedor')
+    return render_template('lista.html', titulo='Vencedor', participantes=lista_participantes, vencedor=vencedor)
 
 
-@app.route('/novo')
+@app.route('/novo', methods=['POST', 'GET'])
 def novo():
-    if 'usuario_logado' not in session or session['usuario_logado'] == None:
-        return redirect(url_for('login',proxima=url_for('novo')))
-    return render_template('novo.html', titulo='Novo Jogo')
+    return render_template('novo.html', titulo='Cadastrar participante')
 
 
 @app.route('/criar', methods=['POST'])
 def criar():
     nome = request.form['nome']
-    categoria = request.form['categoria']
-    console = request.form['console']
-    jogo = Jogo(nome, categoria, console)
-    lista_jogos.append(jogo)
+    lista_participantes.append(nome)
     return redirect(url_for('index'))
 
 
-@app.route('/login')
-def login():
-    proxima = request.args.get('proxima')
-    return render_template('login.html', proxima=proxima)
-
-
-@app.route('/logout')
-def logout():
-    session['usuario_logado'] = None
-    flash('Logout efetuado com sucesso!')
+@app.route('/zerar', methods=['POST'])
+def zerar():
+    lista_participantes = []
+    vencedor = None
     return redirect(url_for('index'))
 
-
-@app.route('/autenticar', methods=['POST'])
-def autenticar():
-    if 'senha' == request.form['senha']:
-        usuario = request.form['usuario']
-        session['usuario_logado'] = usuario
-        flash(usuario + 'logado com sucesso!')
-        proxima_pagina = request.form['proxima']
-        return redirect(proxima_pagina)
-    else:
-        flash('Usuário não logado')
-        return redirect(url_for('login'))
+@app.route('/sortear', methods=['POST'])
+def sortear():
+    vencedor = random.choice(lista_participantes)
+    lista_participantes.clear()
+    return redirect(url_for('vencedor', vencedor=vencedor))
 
 
 app.run(port=8080, debug=True)
