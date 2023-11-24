@@ -23,6 +23,8 @@ def index():
 
 @app.route('/novo')
 def novo():
+    if 'usuario_logado' not in session or session['usuario_logado'] == None:
+        return redirect('/login')
     return render_template('novo.html', titulo='Novo Jogo')
 
 
@@ -41,9 +43,16 @@ def login():
     return render_template('login.html')
 
 
+@app.route('/logout')
+def logout():
+    session['usuario_logado'] = None
+    flash('Logout efetuado com sucesso!')
+    return redirect('/')
+
+
 @app.route('/autenticar', methods=['POST'])
 def autenticar():
-    if 'alohomora' == request.form['senha']:
+    if 'senha' == request.form['senha']:
         usuario = request.form['usuario']
         session['usuario_logado'] = usuario
         flash(usuario + 'logado com sucesso!')
